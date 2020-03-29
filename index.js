@@ -105,7 +105,7 @@ if (!tree_file_data) {
  * 1、扫描绝对目录：字符串索引new_tree
  * 2、old_num > new_num: 插入逻辑; old_num < new_num: 删除逻辑  old_num = new_num：更新逻辑
  * 3、for 循环 最大的num, 执行相应逻辑
- * 4、组装最后数据
+ * 4、组装最后数据 ok
  * 5、覆盖写入Tree文件
  */
 //0、Tree文件：tree_file_data: 字符串索引old_tree 和  notice_arr索引数组'//*'(字符串索引,)
