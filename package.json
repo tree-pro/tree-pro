@@ -1,0 +1,19 @@
+{
+  "name": "tree-pro",
+  "version": "1.0.0",
+  "description": "目录可视化&注释",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "目录可视化"
+  ],
+  "author": "lucklidi@126.com gebbyuluo@126.com",
+  "license": "ISC",
+  "dependencies": {
+    "path": "^0.12.7",
+    "shelljs": "^0.8.3",
+    "tree-node-cli": "^1.2.5"
+  }
+}
