@@ -46,7 +46,11 @@ if (arguments.length < 1) {
 }
 //扫描的绝对目录
 let scan_file_dir  =  arguments[0];
-let scan_dir_arr   =  scan_file_dir.split('\\');
+let scan_dir_arr   =  scan_file_dir.split('/');
+//兼容windows
+if (scan_dir_arr[0] === scan_file_dir) {
+    scan_dir_arr   =  scan_file_dir.split('\\');
+}
 let tree_right_pin =  scan_dir_arr.pop();
 //Tree文件名
 let tree_file_name =  arguments[1] ? arguments[1] : 'tree-pro-' + tree_right_pin;
@@ -76,7 +80,7 @@ const config_Obj = JSON.parse(fs.readFileSync(global_config_path).toString());
 /**
  * 同步读取:目标Tree文件
  */
-let tree_file_path = path.resolve(__dirname, scan_file_dir + '\\' + tree_file_name + '.md');
+let tree_file_path = path.resolve(__dirname, scan_file_dir + '/' + tree_file_name + '.md');
 //log(tree_file_path);exit();
 let tree_file_data = my_try_catch(tree_file_path, function (real_file_path){
     return fs.readFileSync(real_file_path).toString();
@@ -87,11 +91,15 @@ if (!tree_file_data) {
     let new_str_data = my_try_catch(scan_file_dir, function (real_path){
         let new_str = tree_cli((real_path), {
             allFiles: true,
-            exclude: [/node_modules/, /lcov/],
+            exclude: [/node_modules/, /lcov/,/.idea/,/.git/],
             maxDepth: 4,
         });
-        log(new_str);
-        fs.appendFileSync(tree_file_path, new_str);
+        let deal_new_str = new_str.split('\n');
+        for (let q=0; q < deal_new_str.length; ++q) {
+            //同步的追加
+            fs.appendFileSync(tree_file_path, deal_new_str[q] + ' //' + '\n');
+            log(deal_new_str[q] + ' //');
+        }
         return true;
     });
     if (!new_str_data) {
@@ -162,7 +170,7 @@ if (map_res) {
                 } else {
                     //组装备注
                     if (new_tree[m]) {
-                        old_tree[`${old_keys[m]}`] = new_tree[m] + '//' + notice_arr[`${old_keys[m]}`];
+                        old_tree[`${old_keys[m]}`] = new_tree[m] + ' //' + notice_arr[`${old_keys[m]}`];
                     }
                 }
             }
@@ -172,10 +180,10 @@ if (map_res) {
             for (let n=0; n < deal_new_tree.length; ++n) {
                 //找出待插入的元素
                 if (deal_old_tree.indexOf(deal_new_tree[n]) === -1) {
-                    deal_old_tree.splice(n,0, new_tree[n] + '//');
-                    deal_new_tree[n] = new_tree[n] + '//';
+                    deal_old_tree.splice(n,0, new_tree[n] + ' //');
+                    deal_new_tree[n] = new_tree[n] + ' //';
                 } else {
-                    deal_old_tree[n] = new_tree[n] + '//' + (notice_arr[`${old_keys[n]}`] ? notice_arr[`${old_keys[n]}`] : '');
+                    deal_old_tree[n] = new_tree[n] + ' //' + (notice_arr[`${old_keys[n]}`] ? notice_arr[`${old_keys[n]}`] : '');
                 }
             }
             old_tree = deal_old_tree;//exit(old_tree);
@@ -189,7 +197,7 @@ if (map_res) {
                     old_tree[`${old_keys[k]}`] = new_tree_value;
                 }
                 //组装备注
-                old_tree[`${old_keys[k]}`] = old_tree[`${old_keys[k]}`] + '//' + notice_arr[`${old_keys[k]}`]; //exit(old_tree);
+                old_tree[`${old_keys[k]}`] = old_tree[`${old_keys[k]}`] + ' //' + notice_arr[`${old_keys[k]}`]; //exit(old_tree);
             }
     }
 } else {
