@@ -92,7 +92,7 @@ if (!tree_file_data) {
         let new_str = tree_cli((real_path), {
             allFiles: true,
             exclude: [/node_modules/, /lcov/,/.idea/,/.git/],
-            maxDepth: 4,
+            maxDepth: 2,
         });
         let deal_new_str = new_str.split('\n');
         for (let q=0; q < deal_new_str.length; ++q) {
@@ -134,8 +134,8 @@ for (let i=0; i < new_file_data.length; ++i) {
 //1、扫描绝对目录：字符串索引new_tree
 let new_str = tree_cli((scan_file_dir), {
     allFiles: true,
-    exclude: [/node_modules/, /lcov/],
-    maxDepth: 4,
+    exclude: [/node_modules/, /lcov/,/.idea/,/.git/],
+    maxDepth: 2,
 });
 let new_tree = new_str.split('\n');
 //2、old > new: 删除逻辑; old < new:插入逻辑  old = new：更新逻辑
