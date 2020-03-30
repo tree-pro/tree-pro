@@ -40,22 +40,24 @@ let exit = function($notice = false) {
  */
 let arguments = process.argv.splice(2);
 if (arguments.length < 1) {
-    log('\n请输入： 扫描的绝对目录 + tree文件名(默认zz-tree-pro-目录名) + 环境(默认dev)\n' +
+    log('\n请输入： 扫描的绝对目录 + 扫描的绝对深度(默认:2级) + tree文件名(默认:zz-tree-pro-目录名) + 环境(默认:dev)\n' +
         '\n' +
-        'Example: node index.js   D:\\tree-pro\\test test dev 或 D:\\tree-pro\\test lidi  dev'); exit();
+        'Example: node index.js   D:\\tree-pro\\test 2 test dev 或 D:\\tree-pro\\test 2 lidi  dev'); exit();
 }
-//扫描的绝对目录
+//0、扫描的绝对目录
 let scan_file_dir  =  arguments[0];
 let scan_dir_arr   =  scan_file_dir.split('/');
 //兼容windows
 if (scan_dir_arr[0] === scan_file_dir) {
     scan_dir_arr   =  scan_file_dir.split('\\');
 }
+//1、扫描的绝对深度
+let scan_deep      =  arguments[1] ? arguments[1] : 2;
 let tree_right_pin =  scan_dir_arr.pop();
-//Tree文件名
-let tree_file_name =  arguments[1] ? arguments[1] : 'zz-tree-pro-' + tree_right_pin;
-//当前环境
-let env_name       =  arguments[2] ? arguments[2] : 'dev';
+//2、Tree文件名
+let tree_file_name =  arguments[2] ? arguments[2] : 'zz-tree-pro-' + tree_right_pin;
+//3、当前环境
+let env_name       =  arguments[3] ? arguments[3] : 'dev';
 /**
  * 全局配置文件
  */
@@ -92,7 +94,7 @@ if (!tree_file_data) {
         let new_str = tree_cli((real_path), {
             allFiles: false,
             exclude: [/node_modules/, /lcov/],
-            maxDepth: 2,
+            maxDepth: scan_deep,
         });
         let deal_new_str = new_str.split('\n');
         for (let q=0; q < deal_new_str.length; ++q) {
@@ -135,7 +137,7 @@ for (let i=0; i < new_file_data.length; ++i) {
 let new_str = tree_cli((scan_file_dir), {
     allFiles: false,
     exclude: [/node_modules/, /lcov/],
-    maxDepth: 2,
+    maxDepth: scan_deep,
 });
 let new_tree = new_str.split('\n');
 //2、old > new: 删除逻辑; old < new:插入逻辑  old = new：更新逻辑
