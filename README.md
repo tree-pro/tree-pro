@@ -18,11 +18,11 @@ D:\tree-pro>cnpm i
 ### ②：一起执行
 ```lua
 
-D:\phpstudy_pro\tree-pro>node index.js
+D:\tree-pro>node index.js
 
-请输入： 扫描的绝对目录 + tree文件名(默认tree-pro-目录名) + 环境(默认dev)
+请输入： 扫描的绝对目录 + 扫描的绝对深度(默认:2级) + tree文件名(默认:zz-tree-pro-目录名) + 环境(默认:dev)
 
-Example: node index.js   D:\tree-pro\test test dev 或 D:\tree-pro\test lidi  dev
+Example: node index.js   D:\tree-pro\test 2 test dev 或 D:\tree-pro\test 2 lidi  dev
 
 
 ```
