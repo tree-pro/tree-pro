@@ -40,7 +40,7 @@ let exit = function($notice = false) {
  */
 let arguments = process.argv.splice(2);
 if (arguments.length < 1) {
-    log('\n请输入： 扫描的绝对目录 + tree文件名(默认tree-pro-目录名) + 环境(默认dev)\n' +
+    log('\n请输入： 扫描的绝对目录 + tree文件名(默认zz-tree-pro-目录名) + 环境(默认dev)\n' +
         '\n' +
         'Example: node index.js   D:\\tree-pro\\test test dev 或 D:\\tree-pro\\test lidi  dev'); exit();
 }
@@ -53,7 +53,7 @@ if (scan_dir_arr[0] === scan_file_dir) {
 }
 let tree_right_pin =  scan_dir_arr.pop();
 //Tree文件名
-let tree_file_name =  arguments[1] ? arguments[1] : 'tree-pro-' + tree_right_pin;
+let tree_file_name =  arguments[1] ? arguments[1] : 'zz-tree-pro-' + tree_right_pin;
 //当前环境
 let env_name       =  arguments[2] ? arguments[2] : 'dev';
 /**
@@ -85,13 +85,13 @@ let tree_file_path = path.resolve(__dirname, scan_file_dir + '/' + tree_file_nam
 let tree_file_data = my_try_catch(tree_file_path, function (real_file_path){
     return fs.readFileSync(real_file_path).toString();
 });
-// init tree-pro.md
+// init zz-tree-pro.md
 if (!tree_file_data) {
     log('文件:' + tree_file_path + ' 为空或不存在!');
     let new_str_data = my_try_catch(scan_file_dir, function (real_path){
         let new_str = tree_cli((real_path), {
-            allFiles: true,
-            exclude: [/node_modules/, /lcov/,/.idea/,/.git/],
+            allFiles: false,
+            exclude: [/node_modules/, /lcov/],
             maxDepth: 2,
         });
         let deal_new_str = new_str.split('\n');
@@ -123,18 +123,18 @@ new_file_data = new_file_data.filter(function (s) {
     return s && s.trim();
 });
 //初始化
-let notice_arr = [], old_tree = [], real_old_tree = [];
+let notice_arr = [], old_tree = [], old_keys = [];
 for (let i=0; i < new_file_data.length; ++i) {
     let split_arr = new_file_data[i].split(tree_notice);
-    real_old_tree[i]         = split_arr[0];
-    old_tree[tree_pin + i]   = split_arr[0];
-    notice_arr[tree_pin + i] = split_arr[1] ? split_arr[1] : '';
-}
-//log(old_tree);//exit(notice_arr);
+    let old_key   = split_arr[0].split(' ').join('');
+    old_keys[i]   = old_key;
+    old_tree[old_key]   = split_arr[0];
+    notice_arr[old_key] = split_arr[1] ? split_arr[1] : '';
+}//exit(old_keys);//log(old_tree);//exit(notice_arr);
 //1、扫描绝对目录：字符串索引new_tree
 let new_str = tree_cli((scan_file_dir), {
-    allFiles: true,
-    exclude: [/node_modules/, /lcov/,/.idea/,/.git/],
+    allFiles: false,
+    exclude: [/node_modules/, /lcov/],
     maxDepth: 2,
 });
 let new_tree = new_str.split('\n');
@@ -150,55 +150,85 @@ if (Object.keys(old_tree).length > Object.keys(new_tree).length) {
     redux_flag = '>';
 } else if (Object.keys(old_tree).length < Object.keys(new_tree).length){
     redux_flag = '<';
-}
-//log(old_tree);//exit(new_tree);
+}//log(old_tree);//exit(new_tree);
 //数据调度：策略&安全
 //3、for 循环 最大的num, 执行相应逻辑 //4、组装最后数据
-let old_keys = Object.keys(old_tree);
 let map_res = redux_map[`${redux_flag}`];
 //重新处理数组
-let deal_new_tree = new_tree.map(x => { return x.split(' ').pop(); });
-let deal_old_tree = real_old_tree.map(x => { return x.split(' ').pop(); });
+let tmp_new_tree = [], new_keys = [];
+for (let p=0; p < new_tree.length; ++p) {
+    let new_key  = new_tree[p].split(' ').join('');
+    new_keys[p]  = new_key;
+    tmp_new_tree[new_key] = new_tree[p];
+}
+new_tree = tmp_new_tree; //log(old_keys);exit(new_keys);
+new_keys = Object.values(new_keys);
+old_keys = Object.values(old_keys); //exit(new_tree);
 if (map_res) {
     switch (map_res) {
         case 'gt':
-            //大于: 删除逻辑 //exit(deal_old_tree);
+            //大于: 删除逻辑
+            //log(new_tree);exit(old_tree);log(notice_arr);
+            let del_items = [];
             for (let m=0; m < old_keys.length; ++m) {
-                //找出待删除的元素
-                if (deal_new_tree.indexOf(deal_old_tree[m]) === -1) {
-                    delete old_tree[`${old_keys[m]}`];
+                if (new_keys.indexOf(old_keys[m]) === -1) {
+                    //收集删除的元素
+                    del_items[m] = old_keys[m] + ' : ' + notice_arr[`${old_keys[m]}`];
                 } else {
                     //组装备注
-                    if (new_tree[m]) {
-                        old_tree[`${old_keys[m]}`] = new_tree[m] + ' //' + notice_arr[`${old_keys[m]}`];
-                    }
+                    new_tree[old_keys[m]] = new_tree[old_keys[m]] + ' //' + notice_arr[`${old_keys[m]}`];
                 }
             }
+            log("请留意: 以下文件被删除");
+            log(Object.values(del_items));
+            old_tree = new_tree;
             break;
         case 'lt':
-            //小于: 插入逻辑 //log(new_tree);
-            for (let n=0; n < deal_new_tree.length; ++n) {
-                //找出待插入的元素
-                if (deal_old_tree.indexOf(deal_new_tree[n]) === -1) {
-                    deal_old_tree.splice(n,0, new_tree[n] + ' //');
-                    deal_new_tree[n] = new_tree[n] + ' //';
-                } else {
-                    deal_old_tree[n] = new_tree[n] + ' //' + (notice_arr[`${old_keys[n]}`] ? notice_arr[`${old_keys[n]}`] : '');
-                }
-            }
-            old_tree = deal_old_tree;//exit(old_tree);
-            break;
-        default:
-            //等于:e更新逻辑
-            for (let k=0; k < old_keys.length; ++k) {
-                let old_tree_value = old_tree[`${old_keys[k]}`];
-                let new_tree_value = new_tree[k];
-                if (old_tree_value !== new_tree_value) {
-                    old_tree[`${old_keys[k]}`] = new_tree_value;
+            //小于: 插入逻辑 exit(old_tree); //exit(notice_arr);
+            let add_items = [];
+            for (let n=0; n < new_keys.length; ++n) {
+                if (old_keys.indexOf(new_keys[n]) === -1) {
+                    //收集增加的元素
+                    add_items[n] = new_keys[n];
+                    new_tree[new_keys[n]] = new_tree[new_keys[n]] + ' //';
                 }
                 //组装备注
-                old_tree[`${old_keys[k]}`] = old_tree[`${old_keys[k]}`] + ' //' + notice_arr[`${old_keys[k]}`]; //exit(old_tree);
+                if (notice_arr[`${old_keys[n]}`] !== undefined) {
+                     new_tree[old_keys[n]] = new_tree[old_keys[n]] + ' //' + notice_arr[`${old_keys[n]}`];
+                }
             }
+            //log(old_keys);exit(new_keys);
+            log("请留意: 以下文件是新增");
+            log(Object.values(add_items));
+            old_tree = new_tree;
+            break;
+        default:
+            //等于:e更新逻辑 //exit(notice_arr);
+            let update_items = [];
+            for (let k=0; k < new_keys.length; ++k) {
+                if (old_keys.indexOf(new_keys[k]) === -1) {
+                    //收集更新的元素
+                    update_items[k] = new_keys[k];
+                    new_tree[new_keys[k]] = new_tree[new_keys[k]] + ' //' + notice_arr[`${old_keys[k]}`];
+                }
+                //组装备注
+                if (new_tree[old_keys[k]] !== undefined) {
+                    new_tree[old_keys[k]] = new_tree[old_keys[k]] + ' //' + notice_arr[`${old_keys[k]}`];
+                    //1、删除已用的注释
+                    delete notice_arr[`${old_keys[k]}`];
+                }
+            }
+            //2、再次替换修改
+            if (Object.values(update_items).length > 1) {
+                log("请留意: 以下是批量更新文件");
+                log(Object.values(update_items));
+                exit('Tree-pro友情提示:(v1.00)目前不支持批量更新，请逐一修改.');
+            }
+            new_tree[Object.values(update_items)[0]] = new_tree[Object.values(update_items)[0]].split('//')[0] + ' //' + Object.values(notice_arr).pop();
+            //log(Object.values(update_items));exit(new_tree);
+            log("请留意: 以下文件是更新");
+            log(Object.values(update_items));
+            old_tree = new_tree;
     }
 } else {
     exit("非法数据，调度，请注意！");
@@ -209,8 +239,7 @@ let old_to_new = Object.values(old_tree);
 fs.writeFileSync(tree_file_path, "", [{ encoding: "utf8"}]);
 for (let z=0; z < old_to_new.length; ++z) {
     //同步的追加
-    fs.appendFileSync(tree_file_path, old_to_new[z] + '\n');
-    log(old_to_new[z]);
+    fs.appendFileSync(tree_file_path, old_to_new[z] + '\n'); //log(old_to_new[z]);
 }
 console.log("循环追加写入,成功!");
 
