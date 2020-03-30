@@ -224,8 +224,10 @@ if (map_res) {
                 log(Object.values(update_items));
                 exit('Tree-pro友情提示:(v1.00)目前不支持批量更新，请逐一修改.');
             }
-            new_tree[Object.values(update_items)[0]] = new_tree[Object.values(update_items)[0]].split('//')[0] + ' //' + Object.values(notice_arr).pop();
-            //log(Object.values(update_items));exit(new_tree);
+            if (Object.values(update_items)[0]) {
+                new_tree[Object.values(update_items)[0]] = new_tree[Object.values(update_items)[0]].split('//')[0]
+                    + ' //' + Object.values(notice_arr).pop();
+            }
             log("请留意: 以下文件是更新");
             log(Object.values(update_items));
             old_tree = new_tree;
