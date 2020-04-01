@@ -1,7 +1,10 @@
 /** Tree 引用 **/
 const fs         = require("fs");
+
 const path       = require('path');
+
 const shell      = require('shelljs');
+
 const tree_cli   = require('tree-node-cli');
 
 /** Tree 默认conf **/
@@ -124,7 +127,6 @@ fs.writeFileSync(tree_md_file_path, '', [{ encoding: 'utf8'}]);
 for (let z=0; z < old_to_new.length; ++z) {
     fs.appendFileSync(tree_md_file_path, old_to_new[z] + '\n');
 }
-
 log("Tree-pro, 自动写入成功^_^");
 
 
