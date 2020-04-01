@@ -7,7 +7,7 @@
  * @param tree_cli
  * @param my_try_catch
  * @param tree
- * @returns {T[]}
+ * @returns {[]}
  */
 let ini_tree = (tree_md_file_path, scan_file_dir, scan_deep, fs, tree_cli, my_try_catch, tree) => {
     /**
